@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
@@ -34,6 +35,12 @@ public class BankAccountController {
         if (asOf != null) {
             try {
                 timestamp = Instant.parse(asOf); // Parse provided timestamp
+
+                // Ensure asOf is not older than 30 days
+                Instant oldestAllowed = Instant.now().minus(Duration.ofDays(30));
+                if (timestamp.isBefore(oldestAllowed)) {
+                    throw new IllegalArgumentException("The requested timestamp is older than 30 days and is not allowed.");
+                }
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException("Invalid date format. Use ISO-8601 (e.g., 2024-01-31T12:34:56Z)");
             }
